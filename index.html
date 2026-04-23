@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Site Diary App — Viewplex (M) Sdn Bhd</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #1F3864;
+    --blue: #2E75B6;
+    --blue-light: #DEEAF1;
+    --green: #375623;
+    --green-light: #E2EFDA;
+    --green-border: #70AD47;
+    --amber: #806000;
+    --amber-light: #FFF2CC;
+    --orange: #833C00;
+    --orange-light: #FCE4D6;
+    --orange-dot: #ED7D31;
+    --red: #C00000;
+    --red-light: #FFD7D7;
+    --bg: #f5f7fa;
+    --card: #ffffff;
+    --border: #dde2ea;
+    --border-light: #eef0f4;
+    --text: #1a2332;
+    --text-sub: #6b7a90;
+    --font: 'DM Sans', system-ui, sans-serif;
+    --radius: 8px;
+    --radius-lg: 14px;
+    --shadow: 0 1px 4px rgba(0,0,0,.08);
+  }
+
+  html { background: #e8ecf2; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 430px;
+    min-height: 100vh;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 40px rgba(0,0,0,.12);
+  }
+
+  .topbar {
+    background: var(--navy);
+    color: #fff;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .logo {
+    width: 36px; height: 36px;
+    border-radius: 9px;
+    background: var(--blue);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; color: #fff;
+    letter-spacing: .5px;
+    flex-shrink: 0;
+  }
+  .topbar h1 { font-size: 15px; font-weight: 600; color: #fff; }
+  .topbar .sub { font-size: 11px; color: #aac4e8; margin-top: 2px; }
+
+  .tabs {
+    display: flex;
+    background: var(--card);
+    border-bottom: 1px solid var(--border-light);
+    flex-shrink: 0;
+  }
+  .tab {
+    flex: 1;
+    padding: 11px 4px;
+    font-size: 11.5px;
+    font-family: var(--font);
+    font-weight: 500;
+    color: var(--text-sub);
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color .15s, border-color .15s;
+  }
+  .tab.active { color: var(--navy); border-bottom-color: var(--navy); }
+
+  .page { display: none; padding: 14px 14px 40px; overflow-y: auto; }
+  .page.active { display: block; }
+
+  .field { margin-bottom: 12px; }
+  .field label {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-sub);
+    margin-bottom: 4px;
+    letter-spacing: .2px;
+  }
+  .field input,
+  .field select,
+  .field textarea {
+    width: 100%;
+    padding: 9px 11px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-family: var(--font);
+    background: var(--card);
+    color: var(--text);
+    transition: border-color .15s, box-shadow .15s;
+    -webkit-appearance: none;
+  }
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(46,117,182,.12);
+  }
+  .field textarea { resize: vertical; min-height: 72px; }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--navy);
+    background: var(--blue-light);
+    padding: 5px 10px;
+    border-radius: var(--radius);
+    margin: 14px 0 10px;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+  }
+
+  .worker-header,
+  .worker-row {
+    display: grid;
+    grid-template-columns: 1fr 80px 70px;
+    gap: 6px;
+    margin-bottom: 6px;
+    align-items: center;
+  }
+  .worker-header { margin-bottom: 4px; }
+  .col-hdr { font-size: 10px; color: var(--text-sub); font-weight: 600; }
+  .worker-row input,
+  .worker-row select {
+    padding: 7px 8px;
+    font-size: 12px;
+    font-family: var(--font);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+    color: var(--text);
+    width: 100%;
+    -webkit-appearance: none;
+  }
+
+  .eq-header,
+  .eq-row {
+    display: grid;
+    grid-template-columns: 1fr 70px 60px;
+    gap: 6px;
+    margin-bottom: 6px;
+    align-items: center;
+  }
+  .eq-header { margin-bottom: 4px; }
+  .eq-row input,
+  .eq-row select {
+    padding: 7px 8px;
+    font-size: 12px;
+    font-family: var(--font);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+    color: var(--text);
+    width: 100%;
+    -webkit-appearance: none;
+  }
+
+  .add-btn {
+    width: 100%;
+    padding: 8px;
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius);
+    background: none;
+    color: var(--text-sub);
+    font-size: 12px;
+    font-family: var(--font);
+    cursor: pointer;
+    margin-bottom: 8px;
+    transition: background .15s;
+  }
+  .add-btn:hover { background: var(--blue-light); border-color: var(--blue); color: var(--navy); }
+
+  .submit-btn {
+    width: 100%;
+    padding: 13px;
+    background: var(--navy);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--font);
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background .15s, transform .1s;
+  }
+  .submit-btn:hover { background: var(--blue); }
+  .submit-btn:active { transform: scale(.98); }
+  .submit-btn:disabled { background: var(--text-sub); cursor: not-allowed; }
+
+  .success-box {
+    display: none;
+    background: var(--green-light);
+    border: 1px solid var(--green-border);
+    border-radius: var(--radius);
+    padding: 14px;
+    text-align: center;
+    margin-top: 10px;
+  }
+  .success-box .big { font-size: 26px; margin-bottom: 6px; }
+  .success-box p { color: var(--green); font-size: 13px; }
+
+  .error-box {
+    display: none;
+    background: var(--red-light);
+    border: 1px solid var(--red);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    text-align: center;
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--red);
+  }
+
+  .pill { font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
+  .pill-done { background: var(--green-light); color: var(--green); }
+  .pill-pend { background: var(--amber-light); color: var(--amber); }
+  .pill-miss { background: var(--red-light); color: var(--red); }
+
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .stat-card { background: var(--card); border-radius: var(--radius); padding: 12px; box-shadow: var(--shadow); }
+  .stat-val { font-size: 24px; font-weight: 600; color: var(--text); }
+  .stat-lbl { font-size: 11px; color: var(--text-sub); margin-top: 3px; }
+
+  .alert {
+    background: var(--orange-light);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: var(--orange);
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .alert-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--orange-dot); margin-top: 3px; flex-shrink: 0; }
+
+  .dash-card { background: var(--card); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 8px; box-shadow: var(--shadow); }
+  .dash-card .dc-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .dash-card .dc-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .dash-card .dc-date { font-size: 11px; color: var(--text-sub); }
+  .dc-pills { display: flex; gap: 5px; flex-wrap: wrap; }
+
+  .progress-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .progress-name { font-size: 12px; color: var(--text); min-width: 110px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .progress-bar-wrap { flex: 1; height: 6px; background: var(--border-light); border-radius: 3px; overflow: hidden; }
+  .progress-bar { height: 6px; background: var(--navy); border-radius: 3px; }
+  .progress-label { font-size: 11px; color: var(--text-sub); min-width: 30px; text-align: right; }
+
+  .history-row { border-bottom: 1px solid var(--border-light); padding: 10px 0; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .history-row:last-child { border-bottom: none; }
+  .hr-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .hr-info { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+
+  .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--border-light); }
+  .settings-row:last-child { border-bottom: none; }
+  .sr-label { font-size: 13px; font-weight: 500; color: var(--text); }
+  .sr-sub { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+
+  .toggle { width: 42px; height: 24px; border-radius: 12px; background: var(--navy); position: relative; cursor: pointer; flex-shrink: 0; transition: background .2s; }
+  .toggle::after { content: ''; position: absolute; width: 18px; height: 18px; border-radius: 50%; background: #fff; top: 3px; right: 3px; transition: right .2s, left .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+  .toggle.off { background: var(--border); }
+  .toggle.off::after { right: auto; left: 3px; }
+
+  .required-star { color: var(--red); }
+
+  @media (min-width: 500px) {
+    html { padding: 24px 0; background: #d0d6e0; }
+    .app { border-radius: var(--radius-lg); min-height: auto; }
+    .topbar { border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="topbar">
+    <div class="logo">SD</div>
+    <div>
+      <h1>Site Diary App</h1>
+      <div class="sub">Viewplex (M) Sdn Bhd — Team 2201</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('form')">Daily Report</button>
+    <button class="tab" onclick="switchTab('dashboard')">Dashboard</button>
+    <button class="tab" onclick="switchTab('history')">History</button>
+    <button class="tab" onclick="switchTab('settings')">Settings</button>
+  </div>
+
+  <!-- DAILY REPORT -->
+  <div id="tab-form" class="page active">
+    <div class="section-label">Report Info</div>
+    <div class="row2">
+      <div class="field">
+        <label>Date <span class="required-star">*</span></label>
+        <input type="date" id="f-date">
+      </div>
+      <div class="field">
+        <label>Supervisor <span class="required-star">*</span></label>
+        <select id="f-sup">
+          <option value="">Select...</option>
+          <option>Akram Faruk</option>
+          <option>Muthu</option>
+          <option>Sazon</option>
+          <option>Abu Sayed</option>
+          <option>Shamim</option>
+          <option>Nour Alam</option>
+          <option>Nayem</option>
+          <option>Kaimuzzaman</option>
+        </select>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Team No</label>
+        <select id="f-team">
+          <option>Team 2201</option>
+          <option>Team VP-04</option>
+          <option>Team Khairul</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Weather</label>
+        <select id="f-weather">
+          <option>Good / Baik</option>
+          <option>Raining / Hujan</option>
+          <option>Heavy Rain</option>
+          <option>Flood / Banjir</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Location / Site <span class="required-star">*</span></label>
+      <select id="f-loc">
+        <option value="">Select location...</option>
+        <option>Jalan Dato Ismail Hashim (Mutiara)</option>
+        <option>Jalan S. Ampat – IKS Simpang Ampat</option>
+        <option>Bukit Bandera – B. Lepas</option>
+        <option>LRT B. Lepas</option>
+        <option>Store / Stor</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Start Time</label>
+        <input type="time" id="f-start" value="07:00">
+      </div>
+      <div class="field">
+        <label>End Time</label>
+        <input type="time" id="f-end" value="18:00">
+      </div>
+    </div>
+
+    <div class="section-label">Work Activities</div>
+    <div class="field">
+      <label>Work Type</label>
+      <select id="f-wtype">
+        <option>HDD (Horizontal Directional Drilling)</option>
+        <option>Open Cut</option>
+        <option>Survey / Video Tracing</option>
+        <option>Equipment Relocation</option>
+        <option>Store Works</option>
+        <option>Guard Duty / Jaga Site</option>
+        <option>Support – Other Team</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Activities Done Today <span class="required-star">*</span></label>
+      <textarea id="f-act" placeholder="e.g. Tool Box Talk, Reaming 300mm CRC-21, Cuci Jalan..."></textarea>
+    </div>
+    <div class="field">
+      <label>CRC / Borehole Reference</label>
+      <input type="text" id="f-crc" placeholder="e.g. CRC-21, CRC-22">
+    </div>
+    <div class="field">
+      <label>Issues / Problems</label>
+      <textarea id="f-issue" placeholder="e.g. NIL — or describe any problem, delay, incident..." style="min-height:52px"></textarea>
+    </div>
+
+    <div class="section-label">Manpower on Site</div>
+    <div class="worker-header">
+      <div class="col-hdr">Worker Name</div>
+      <div class="col-hdr">Hours</div>
+      <div class="col-hdr">Shift</div>
+    </div>
+    <div id="worker-list">
+      <div class="worker-row">
+        <input type="text" placeholder="Name" value="Muthu">
+        <input type="number" placeholder="Hrs" value="11" min="0" max="24">
+        <select><option>Day</option><option>Night</option><option>Guard</option></select>
+      </div>
+      <div class="worker-row">
+        <input type="text" placeholder="Name" value="Faruk">
+        <input type="number" placeholder="Hrs" value="11" min="0" max="24">
+        <select><option>Day</option><option selected>Night</option><option>Guard</option></select>
+      </div>
+      <div class="worker-row">
+        <input type="text" placeholder="Name" value="Sazon">
+        <input type="number" placeholder="Hrs" value="11" min="0" max="24">
+        <select><option>Day</option><option selected>Night</option><option>Guard</option></select>
+      </div>
+    </div>
+    <button class="add-btn" onclick="addWorker()">+ Add worker</button>
+
+    <div class="section-label">Plant & Equipment</div>
+    <div class="eq-header">
+      <div class="col-hdr">Equipment</div>
+      <div class="col-hdr">Reg / ID</div>
+      <div class="col-hdr">Status</div>
+    </div>
+    <div id="eq-list">
+      <div class="eq-row">
+        <input type="text" placeholder="Equipment" value="Lori">
+        <input type="text" placeholder="Reg No" value="PQB-9801">
+        <select><option>OK</option><option>Issue</option><option>Standby</option></select>
+      </div>
+      <div class="eq-row">
+        <input type="text" placeholder="Equipment" value="HDD Machine">
+        <input type="text" placeholder="Reg No" value="2201">
+        <select><option>OK</option><option>Issue</option><option>Standby</option></select>
+      </div>
+      <div class="eq-row">
+        <input type="text" placeholder="Equipment" value="Backhoe">
+        <input type="text" placeholder="Reg No" value="PKQ-9145">
+        <select><option>OK</option><option>Issue</option><option>Standby</option></select>
+      </div>
+    </div>
+    <button class="add-btn" onclick="addEq()">+ Add equipment</button>
+
+    <div class="section-label">Site Guard Tonight</div>
+    <div class="row2">
+      <div class="field">
+        <label>Guard Name</label>
+        <input type="text" id="f-guard" placeholder="Worker name">
+      </div>
+      <div class="field">
+        <label>Guard Shift</label>
+        <select id="f-gshift">
+          <option>—</option>
+          <option>7PM – 7AM</option>
+          <option>8PM – 8AM</option>
+          <option>Full night</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Material Delivered Today</label>
+      <input type="text" id="f-mat" placeholder="e.g. Bentonite 20 bags, Pipe 4&quot; 3 rolls">
+    </div>
+    <div class="field">
+      <label>Photo / Remarks</label>
+      <textarea id="f-rmk" placeholder="Any additional notes, visitor names, instructions received..." style="min-height:52px"></textarea>
+    </div>
+
+    <button class="submit-btn" id="submit-btn" onclick="submitReport()">Submit Daily Report</button>
+    <div class="success-box" id="success-box">
+      <div class="big">✓</div>
+      <p style="font-weight:600;margin-bottom:4px">Report submitted!</p>
+      <p>Saved to Google Sheet. Office will receive notification.</p>
+    </div>
+    <div class="error-box" id="error-box">
+      Submit failed — check your internet and try again.
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="tab-dashboard" class="page">
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-val">6</div><div class="stat-lbl">Reports today</div></div>
+      <div class="stat-card"><div class="stat-val">2</div><div class="stat-lbl">Missing today</div></div>
+      <div class="stat-card"><div class="stat-val">78%</div><div class="stat-lbl">This week</div></div>
+      <div class="stat-card"><div class="stat-val">8</div><div class="stat-lbl">Active supervisors</div></div>
+    </div>
+    <div class="alert">
+      <div class="alert-dot"></div>
+      <div><strong>Missing reports:</strong> Supervisor 5 and Supervisor 7 have not submitted today's diary. Reminder sent via WhatsApp.</div>
+    </div>
+    <div class="section-label">Today's Submission Status</div>
+    <div class="dash-card">
+      <div class="dc-top"><span class="dc-name">Akram Faruk — Team 2201</span><span class="dc-date">7:42 PM</span></div>
+      <div class="dc-pills"><span class="pill pill-done">Submitted</span><span class="pill pill-done">9 workers</span><span class="pill pill-done">CRC-21</span></div>
+    </div>
+    <div class="dash-card">
+      <div class="dc-top"><span class="dc-name">Muthu — Team 2201</span><span class="dc-date">6:15 PM</span></div>
+      <div class="dc-pills"><span class="pill pill-done">Submitted</span><span class="pill pill-done">7 workers</span><span class="pill pill-done">Mutiara</span></div>
+    </div>
+    <div class="dash-card">
+      <div class="dc-top"><span class="dc-name">Sazon — Team 2201</span><span class="dc-date">5:58 PM</span></div>
+      <div class="dc-pills"><span class="pill pill-done">Submitted</span><span class="pill pill-done">4 workers</span><span class="pill pill-done">HDD Machine</span></div>
+    </div>
+    <div class="dash-card">
+      <div class="dc-top"><span class="dc-name">Abu Sayed — Team 2201</span><span class="dc-date">6:45 PM</span></div>
+      <div class="dc-pills"><span class="pill pill-done">Submitted</span><span class="pill pill-done">6 workers</span><span class="pill pill-done">B. Lepas</span></div>
+    </div>
+    <div class="dash-card">
+      <div class="dc-top"><span class="dc-name">Nour Alam — Team VP-04</span><span class="dc-date">7:03 PM</span></div>
+      <div class="dc-pills"><span class="pill pill-done">Submitted</span><span class="pill pill-done">7 workers</span><span class="pill pill-done">S. Ampat</span></div>
+    </div>
+    <div class="dash-card">
+      <div class="dc-top"><span class="dc-name">Supervisor 5</span><span class="dc-date">—</span></div>
+      <div class="dc-pills"><span class="pill pill-miss">Not submitted</span><span class="pill pill-pend">Reminder sent</span></div>
+    </div>
+    <div class="dash-card">
+      <div class="dc-top"><span class="dc-name">Supervisor 7</span><span class="dc-date">—</span></div>
+      <div class="dc-pills"><span class="pill pill-miss">Not submitted</span><span class="pill pill-pend">Reminder sent</span></div>
+    </div>
+    <div class="section-label">Weekly Compliance — All 8 Supervisors</div>
+    <div id="progress-list"></div>
+    <button class="submit-btn" style="background:#2E75B6;margin-top:6px">Generate Weekly Report ↗</button>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="tab-history" class="page">
+    <div class="field">
+      <label>Filter by supervisor</label>
+      <select onchange="filterHistory(this.value)">
+        <option value="all">All supervisors</option>
+        <option>Akram Faruk</option>
+        <option>Muthu</option>
+        <option>Sazon</option>
+      </select>
+    </div>
+    <div id="history-list"></div>
+    <button class="submit-btn" style="background:#2E75B6;margin-top:6px">Export to Excel ↗</button>
+  </div>
+
+  <!-- SETTINGS -->
+  <div id="tab-settings" class="page">
+    <div class="section-label">Supervisors</div>
+    <div id="sup-list"></div>
+    <button class="add-btn">+ Add supervisor ↗</button>
+
+    <div class="section-label">Notifications</div>
+    <div class="dash-card" style="padding:2px 12px">
+      <div class="settings-row">
+        <div><div class="sr-label">WhatsApp reminder</div><div class="sr-sub">Send reminder at 6PM if not submitted</div></div>
+        <div class="toggle" onclick="this.classList.toggle('off')"></div>
+      </div>
+      <div class="settings-row">
+        <div><div class="sr-label">Missing report alert</div><div class="sr-sub">Alert manager if deadline missed</div></div>
+        <div class="toggle" onclick="this.classList.toggle('off')"></div>
+      </div>
+      <div class="settings-row">
+        <div><div class="sr-label">Auto-export to Excel</div><div class="sr-sub">Export every Sunday midnight</div></div>
+        <div class="toggle off" onclick="this.classList.toggle('off')"></div>
+      </div>
+      <div class="settings-row" style="border:none">
+        <div><div class="sr-label">Backfill mode</div><div class="sr-sub">Allow entry for past dates</div></div>
+        <div class="toggle" onclick="this.classList.toggle('off')"></div>
+      </div>
+    </div>
+
+    <div class="section-label">Backfill Past Reports</div>
+    <div class="alert">
+      <div class="alert-dot"></div>
+      <div>Backfill mode is ON. Supervisors can submit reports for past 6 months to fill the diary gap.</div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>From date</label><input type="date"></div>
+      <div class="field"><label>To date</label><input type="date"></div>
+    </div>
+    <button class="submit-btn" style="background:#375623">Generate Backfill Sheet ↗</button>
+  </div>
+
+</div>
+
+<script>
+  // ── Google Sheet connection ──
+  const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzKhq4f5fKMgTNVNiD4RFBsX9GEq91gBdjDXLsy7ZWeCWaRjT8Mdpg4uNmnngtspWqG/exec';
+
+  // Set today's date
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+
+  // Tab switching
+  function switchTab(t) {
+    const keys = ['form','dashboard','history','settings'];
+    document.querySelectorAll('.tab').forEach((b,i) => b.classList.toggle('active', keys[i] === t));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + t).classList.add('active');
+  }
+
+  // Add worker row
+  function addWorker() {
+    const d = document.createElement('div');
+    d.className = 'worker-row';
+    d.innerHTML = `<input type="text" placeholder="Name">
+      <input type="number" placeholder="Hrs" min="0" max="24">
+      <select><option>Day</option><option>Night</option><option>Guard</option></select>`;
+    document.getElementById('worker-list').appendChild(d);
+  }
+
+  // Add equipment row
+  function addEq() {
+    const d = document.createElement('div');
+    d.className = 'eq-row';
+    d.innerHTML = `<input type="text" placeholder="Equipment">
+      <input type="text" placeholder="Reg No">
+      <select><option>OK</option><option>Issue</option><option>Standby</option></select>`;
+    document.getElementById('eq-list').appendChild(d);
+  }
+
+  // Collect worker names for the sheet
+  function getWorkerNames() {
+    const rows = document.querySelectorAll('#worker-list .worker-row');
+    const names = [];
+    rows.forEach(r => {
+      const name = r.querySelector('input[type="text"]').value.trim();
+      const hrs  = r.querySelector('input[type="number"]').value;
+      const shift = r.querySelector('select').value;
+      if (name) names.push(name + ' (' + hrs + 'h ' + shift + ')');
+    });
+    return names.join(', ');
+  }
+
+  // Collect equipment for the sheet
+  function getEquipment() {
+    const rows = document.querySelectorAll('#eq-list .eq-row');
+    const items = [];
+    rows.forEach(r => {
+      const inputs = r.querySelectorAll('input');
+      const eq  = inputs[0].value.trim();
+      const reg = inputs[1].value.trim();
+      const status = r.querySelector('select').value;
+      if (eq) items.push(eq + ' ' + reg + ' [' + status + ']');
+    });
+    return items.join(', ');
+  }
+
+  // ── Submit Report → Google Sheet ──
+  function submitReport() {
+    const sup = document.getElementById('f-sup').value;
+    const loc = document.getElementById('f-loc').value;
+    const act = document.getElementById('f-act').value.trim();
+
+    if (!sup || !loc || !act) {
+      alert('Please fill in: Supervisor, Location and Activities.');
+      return;
+    }
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
+    document.getElementById('error-box').style.display = 'none';
+
+    const data = {
+      date:       document.getElementById('f-date').value,
+      supervisor: sup,
+      team:       document.getElementById('f-team').value,
+      location:   loc,
+      weather:    document.getElementById('f-weather').value,
+      startTime:  document.getElementById('f-start').value,
+      endTime:    document.getElementById('f-end').value,
+      workType:   document.getElementById('f-wtype').value,
+      activities: act,
+      crc:        document.getElementById('f-crc').value,
+      issues:     document.getElementById('f-issue').value,
+      workers:    getWorkerNames(),
+      workerCount: document.querySelectorAll('#worker-list .worker-row').length,
+      equipment:  getEquipment(),
+      guard:      document.getElementById('f-guard').value,
+      guardShift: document.getElementById('f-gshift').value,
+      material:   document.getElementById('f-mat').value,
+      remarks:    document.getElementById('f-rmk').value,
+      submittedAt: new Date().toLocaleString('en-MY', {timeZone:'Asia/Kuala_Lumpur'})
+    };
+
+    fetch(SHEET_URL, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(result => {
+      btn.disabled = false;
+      btn.textContent = 'Submit Daily Report';
+      if (result.result === 'success') {
+        document.getElementById('success-box').style.display = 'block';
+        setTimeout(() => { document.getElementById('success-box').style.display = 'none'; }, 5000);
+      } else {
+        document.getElementById('error-box').style.display = 'block';
+      }
+    })
+    .catch(() => {
+      btn.disabled = false;
+      btn.textContent = 'Submit Daily Report';
+      document.getElementById('error-box').style.display = 'block';
+    });
+  }
+
+  // Build progress bars
+  const supervisors = ['Akram Faruk','Muthu','Sazon','Abu Sayed','Shamim','Nour Alam','Nayem','Kaimuzzaman'];
+  const compliance  = [92, 88, 75, 96, 70, 83, 60, 78];
+
+  const pl = document.getElementById('progress-list');
+  supervisors.forEach((s, i) => {
+    const pct = compliance[i];
+    const row = document.createElement('div');
+    row.className = 'progress-row';
+    row.innerHTML = `<div class="progress-name">${s}</div>
+      <div class="progress-bar-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>
+      <div class="progress-label">${pct}%</div>`;
+    pl.appendChild(row);
+  });
+
+  // History data
+  const HIST = [
+    {date:'23/04/2026', sup:'Akram Faruk', loc:'S. Ampat', act:'Reaming 300mm CRC-21, Cuci Jalan', workers:9},
+    {date:'22/04/2026', sup:'Akram Faruk', loc:'S. Ampat', act:'Trail Hole CRC-22, Tool Box Talk',  workers:9},
+    {date:'22/04/2026', sup:'Muthu',       loc:'Mutiara',  act:'Pipe pull 6" 4-way, Test CRC-2',   workers:7},
+    {date:'21/04/2026', sup:'Akram Faruk', loc:'S. Ampat', act:'Buka Gulun Join Pipe 4"',          workers:10},
+    {date:'21/04/2026', sup:'Sazon',       loc:'S. Ampat', act:'HDD Machine – service & check',    workers:4},
+    {date:'20/04/2026', sup:'Muthu',       loc:'Mutiara',  act:'Reaming 500mm, Tutup Lubang',       workers:8},
+    {date:'19/04/2026', sup:'Akram Faruk', loc:'B. Lepas', act:'Open cut support Team Khairul',    workers:5},
+  ];
+
+  function renderHistory(filter) {
+    const hl = document.getElementById('history-list');
+    hl.innerHTML = '';
+    const data = filter === 'all' ? HIST : HIST.filter(h => h.sup === filter);
+    if (data.length === 0) {
+      hl.innerHTML = '<div style="text-align:center;color:var(--text-sub);font-size:13px;padding:20px 0">No records found</div>';
+      return;
+    }
+    data.forEach(h => {
+      const row = document.createElement('div');
+      row.className = 'history-row';
+      row.innerHTML = `<div>
+        <div class="hr-name">${h.sup}</div>
+        <div class="hr-info">${h.date} · ${h.loc} · ${h.workers} workers</div>
+        <div class="hr-info" style="margin-top:2px">${h.act}</div>
+      </div>
+      <span class="pill pill-done" style="white-space:nowrap;flex-shrink:0">Submitted</span>`;
+      hl.appendChild(row);
+    });
+  }
+  renderHistory('all');
+  function filterHistory(v) { renderHistory(v); }
+
+  // Supervisor settings list
+  const sl = document.getElementById('sup-list');
+  supervisors.forEach((s, i) => {
+    const row = document.createElement('div');
+    row.className = 'settings-row';
+    const cls = compliance[i] >= 80 ? 'pill-done' : 'pill-pend';
+    row.innerHTML = `<div>
+      <div class="sr-label">${s}</div>
+      <div class="sr-sub">Team 2201 · ${compliance[i]}% compliance</div>
+    </div>
+    <span class="pill ${cls}" style="font-size:11px;padding:3px 10px">${compliance[i]}%</span>`;
+    sl.appendChild(row);
+  });
+</script>
+</body>
+</html>
