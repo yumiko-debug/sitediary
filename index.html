@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Site Diary App — Viewplex (M) Sdn Bhd</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #1F3864; --blue: #2E75B6; --blue-light: #DEEAF1;
+    --green: #375623; --green-light: #E2EFDA; --green-border: #70AD47;
+    --amber: #806000; --amber-light: #FFF2CC;
+    --orange: #833C00; --orange-light: #FCE4D6; --orange-dot: #ED7D31;
+    --red: #C00000; --red-light: #FFD7D7;
+    --bg: #f5f7fa; --card: #ffffff; --border: #dde2ea; --border-light: #eef0f4;
+    --text: #1a2332; --text-sub: #6b7a90;
+    --font: 'DM Sans', system-ui, sans-serif;
+    --radius: 8px; --radius-lg: 14px; --shadow: 0 1px 4px rgba(0,0,0,.08);
+  }
+  html { background: #e8ecf2; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; display: flex; justify-content: center; }
+  .app { width: 100%; max-width: 430px; min-height: 100vh; background: var(--bg); display: flex; flex-direction: column; box-shadow: 0 0 40px rgba(0,0,0,.12); }
+
+  /* Top Bar */
+  .topbar { background: var(--navy); color: #fff; padding: 14px 16px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .logo { width: 36px; height: 36px; border-radius: 9px; background: var(--blue); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; letter-spacing: .5px; flex-shrink: 0; }
+  .topbar h1 { font-size: 15px; font-weight: 600; }
+  .topbar .sub { font-size: 11px; color: #aac4e8; margin-top: 2px; }
+
+  /* Tabs */
+  .tabs { display: flex; background: var(--card); border-bottom: 1px solid var(--border-light); flex-shrink: 0; }
+  .tab { flex: 1; padding: 11px 4px; font-size: 11.5px; font-family: var(--font); font-weight: 500; color: var(--text-sub); border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; transition: color .15s, border-color .15s; }
+  .tab.active { color: var(--navy); border-bottom-color: var(--navy); }
+
+  /* Pages */
+  .page { display: none; padding: 14px 14px 60px; overflow-y: auto; }
+  .page.active { display: block; }
+
+  /* Fields */
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 11.5px; font-weight: 600; color: var(--text-sub); margin-bottom: 4px; letter-spacing: .2px; }
+  .field input, .field select, .field textarea { width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; font-family: var(--font); background: var(--card); color: var(--text); transition: border-color .15s, box-shadow .15s; -webkit-appearance: none; }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(46,117,182,.12); }
+  .field textarea { resize: vertical; min-height: 72px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  /* Section Labels */
+  .section-label { font-size: 11px; font-weight: 600; color: var(--navy); background: var(--blue-light); padding: 5px 10px; border-radius: var(--radius); margin: 14px 0 10px; letter-spacing: .4px; text-transform: uppercase; }
+
+  /* Worker / Equipment rows */
+  .worker-header, .worker-row { display: grid; grid-template-columns: 1fr 65px 65px 28px; gap: 5px; margin-bottom: 6px; align-items: center; }
+  .eq-header, .eq-row { display: grid; grid-template-columns: 1fr 75px 65px 28px; gap: 5px; margin-bottom: 6px; align-items: center; }
+  .worker-header, .eq-header { margin-bottom: 4px; }
+  .col-hdr { font-size: 10px; color: var(--text-sub); font-weight: 600; }
+  .worker-row input, .worker-row select, .eq-row input, .eq-row select { padding: 7px 6px; font-size: 12px; font-family: var(--font); border: 1px solid var(--border); border-radius: var(--radius); background: var(--card); color: var(--text); width: 100%; -webkit-appearance: none; }
+
+  /* Delete btn */
+  .del-btn { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--border); background: none; color: var(--text-sub); font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background .15s, color .15s; line-height: 1; }
+  .del-btn:hover { background: var(--red-light); color: var(--red); border-color: var(--red); }
+
+  /* Add / Submit buttons */
+  .add-btn { width: 100%; padding: 8px; border: 1.5px dashed var(--border); border-radius: var(--radius); background: none; color: var(--text-sub); font-size: 12px; font-family: var(--font); cursor: pointer; margin-bottom: 8px; transition: background .15s; }
+  .add-btn:hover { background: var(--blue-light); border-color: var(--blue); color: var(--navy); }
+  .submit-btn { width: 100%; padding: 13px; background: var(--navy); color: #fff; border: none; border-radius: var(--radius); font-size: 14px; font-weight: 600; font-family: var(--font); cursor: pointer; margin-top: 10px; transition: background .15s, transform .1s; }
+  .submit-btn:hover { background: var(--blue); }
+  .submit-btn:active { transform: scale(.98); }
+  .submit-btn:disabled { background: var(--text-sub); cursor: not-allowed; opacity: .7; }
+
+  /* Feedback */
+  .success-box { display: none; background: var(--green-light); border: 1px solid var(--green-border); border-radius: var(--radius); padding: 16px; text-align: center; margin-top: 12px; }
+  .success-box .icon { font-size: 28px; margin-bottom: 6px; }
+  .success-box .stitle { font-size: 15px; font-weight: 600; color: var(--green); margin-bottom: 6px; }
+  .success-box .detail { font-size: 12px; color: var(--green); line-height: 1.6; }
+  .error-box { display: none; background: var(--red-light); border: 1px solid var(--red); border-radius: var(--radius); padding: 12px 14px; text-align: center; margin-top: 10px; font-size: 13px; color: var(--red); }
+
+  /* Pills */
+  .pill { font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
+  .pill-done { background: var(--green-light); color: var(--green); }
+  .pill-pend { background: var(--amber-light); color: var(--amber); }
+  .pill-miss { background: var(--red-light); color: var(--red); }
+  .pill-blue { background: var(--blue-light); color: var(--navy); }
+
+  /* Dashboard */
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .stat-card { background: var(--card); border-radius: var(--radius); padding: 12px; box-shadow: var(--shadow); }
+  .stat-val { font-size: 24px; font-weight: 600; color: var(--text); }
+  .stat-lbl { font-size: 11px; color: var(--text-sub); margin-top: 3px; }
+  .alert { background: var(--orange-light); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 8px; font-size: 12px; color: var(--orange); display: flex; gap: 8px; align-items: flex-start; }
+  .alert-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--orange-dot); margin-top: 3px; flex-shrink: 0; }
+  .dash-card { background: var(--card); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 8px; box-shadow: var(--shadow); }
+  .dash-card .dc-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .dash-card .dc-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .dash-card .dc-date { font-size: 11px; color: var(--text-sub); }
+  .dc-pills { display: flex; gap: 5px; flex-wrap: wrap; }
+
+  /* Progress */
+  .progress-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .progress-name { font-size: 12px; color: var(--text); min-width: 110px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .progress-bar-wrap { flex: 1; height: 6px; background: var(--border-light); border-radius: 3px; overflow: hidden; }
+  .progress-bar { height: 6px; background: var(--navy); border-radius: 3px; }
+  .progress-label { font-size: 11px; color: var(--text-sub); min-width: 30px; text-align: right; }
+
+  /* History */
+  .history-row { border-bottom: 1px solid var(--border-light); padding: 10px 0; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .history-row:last-child { border-bottom: none; }
+  .hr-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .hr-info { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+
+  /* Settings */
+  .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--border-light); }
+  .settings-row:last-child { border-bottom: none; }
+  .sr-label { font-size: 13px; font-weight: 500; color: var(--text); }
+  .sr-sub { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+  .toggle { width: 42px; height: 24px; border-radius: 12px; background: var(--navy); position: relative; cursor: pointer; flex-shrink: 0; transition: background .2s; }
+  .toggle::after { content: ''; position: absolute; width: 18px; height: 18px; border-radius: 50%; background: #fff; top: 3px; right: 3px; transition: right .2s, left .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+  .toggle.off { background: var(--border); }
+  .toggle.off::after { right: auto; left: 3px; }
+
+  /* Spinner */
+  .spinner { display: inline-block; width: 15px; height: 15px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Sheet badge */
+  .sheet-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--green-light); border: 1px solid var(--green-border); border-radius: 20px; padding: 5px 12px; font-size: 11.5px; color: var(--green); font-weight: 500; margin-bottom: 14px; }
+  .sheet-dot { width: 7px; height: 7px; border-radius: 50%; background: #70AD47; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  .required-star { color: var(--red); }
+
+  @media (min-width: 500px) {
+    html { padding: 24px 0; background: #d0d6e0; }
+    .app { border-radius: var(--radius-lg); min-height: auto; }
+    .topbar { border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="logo">SD</div>
+    <div>
+      <h1>Site Diary App</h1>
+      <div class="sub">Viewplex (M) Sdn Bhd — Team 2201</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('form')">Daily Report</button>
+    <button class="tab" onclick="switchTab('dashboard')">Dashboard</button>
+    <button class="tab" onclick="switchTab('history')">History</button>
+    <button class="tab" onclick="switchTab('settings')">Settings</button>
+  </div>
+
+  <!-- ══ DAILY REPORT ══ -->
+  <div id="tab-form" class="page active">
+
+    <div class="sheet-badge">
+      <div class="sheet-dot"></div>
+      Live — data goes to Google Sheet on Submit
+    </div>
+
+    <div class="section-label">Report Info</div>
+    <div class="row2">
+      <div class="field">
+        <label>Date <span class="required-star">*</span></label>
+        <input type="date" id="f-date">
+      </div>
+      <div class="field">
+        <label>Supervisor <span class="required-star">*</span></label>
+        <select id="f-sup">
+          <option value="">Select...</option>
+          <option>Akram Faruk</option>
+          <option>Muthu</option>
+          <option>Sazon</option>
+          <option>Abu Sayed</option>
+          <option>Shamim</option>
+          <option>Nour Alam</option>
+          <option>Nayem</option>
+          <option>Kaimuzzaman</option>
+        </select>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Team No</label>
+        <select id="f-team">
+          <option>Team 2201</option>
+          <option>Team VP-04</option>
+          <option>Team Khairul</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Weather</label>
+        <select id="f-weather">
+          <option>Good / Baik</option>
+          <option>Raining / Hujan</option>
+          <option>Heavy Rain</option>
+          <option>Flood / Banjir</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Location / Site <span class="required-star">*</span></label>
+      <select id="f-loc">
+        <option value="">Select location...</option>
+        <option>Jalan Dato Ismail Hashim (Mutiara)</option>
+        <option>Jalan S. Ampat – IKS Simpang Ampat</option>
+        <option>Bukit Bandera – B. Lepas</option>
+        <option>LRT B. Lepas</option>
+        <option>Store / Stor</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Start Time</label>
+        <input type="time" id="f-start" value="07:00">
+      </div>
+      <div class="field">
+        <label>End Time</label>
+        <input type="time" id="f-end" value="18:00">
+      </div>
+    </div>
+
+    <div class="section-label">Work Activities → Daily Work Log Sheet</div>
+    <div class="field">
+      <label>Work Type</label>
+      <select id="f-wtype">
+        <option>HDD (Horizontal Directional Drilling)</option>
+        <option>Open Cut</option>
+        <option>Survey / Video Tracing</option>
+        <option>Equipment Relocation</option>
+        <option>Store Works</option>
+        <option>Guard Duty / Jaga Site</option>
+        <option>Support – Other Team</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Activities Done Today <span class="required-star">*</span></label>
+      <textarea id="f-act" placeholder="e.g. Tool Box Talk, Reaming 300mm CRC-21, Cuci Jalan..."></textarea>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>CRC / Borehole Ref → CRC Tracker</label>
+        <input type="text" id="f-crc" placeholder="e.g. CRC-21">
+      </div>
+      <div class="field">
+        <label>Day Type → Attendance</label>
+        <select id="f-daytype">
+          <option>Weekday</option>
+          <option>Saturday</option>
+          <option>Sunday</option>
+          <option>Public Holiday</option>
+          <option>Cuti Ganti</option>
+          <option>Guard Only</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Issues / Problems → Incidents Log</label>
+      <textarea id="f-issue" placeholder="NIL — or describe problem, delay, incident..." style="min-height:52px"></textarea>
+    </div>
+
+    <div class="section-label">Manpower → Attendance Register Sheet</div>
+    <div class="worker-header">
+      <div class="col-hdr">Worker Name</div>
+      <div class="col-hdr">Hours</div>
+      <div class="col-hdr">Shift</div>
+      <div></div>
+    </div>
+    <div id="worker-list"></div>
+    <button class="add-btn" onclick="addWorker()">+ Add worker</button>
+
+    <div class="section-label">Plant & Equipment → Equipment Log Sheet</div>
+    <div class="eq-header">
+      <div class="col-hdr">Equipment</div>
+      <div class="col-hdr">Reg / ID</div>
+      <div class="col-hdr">Status</div>
+      <div></div>
+    </div>
+    <div id="eq-list"></div>
+    <button class="add-btn" onclick="addEq()">+ Add equipment</button>
+
+    <div class="section-label">Guard & Materials</div>
+    <div class="row2">
+      <div class="field">
+        <label>Guard Name</label>
+        <input type="text" id="f-guard" placeholder="Worker name">
+      </div>
+      <div class="field">
+        <label>Guard Shift</label>
+        <select id="f-gshift">
+          <option>—</option>
+          <option>7PM – 7AM</option>
+          <option>8PM – 8AM</option>
+          <option>Full night</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Material Delivered Today → Materials Log Sheet</label>
+      <input type="text" id="f-mat" placeholder='e.g. Bentonite 20 bags, Pipe 4" 3 rolls'>
+    </div>
+    <div class="field">
+      <label>Remarks / Additional Notes</label>
+      <textarea id="f-rmk" placeholder="Extra notes, visitors, instructions..." style="min-height:48px"></textarea>
+    </div>
+
+    <button class="submit-btn" id="submit-btn" onclick="submitReport()">
+      Submit Daily Report → Google Sheet
+    </button>
+
+    <div class="success-box" id="success-box">
+      <div class="icon">✅</div>
+      <div class="stitle">Report Submitted Successfully!</div>
+      <div class="detail" id="success-detail">Saved to Google Sheet.</div>
+    </div>
+    <div class="error-box" id="error-box">
+      ❌ Submit failed — check your internet and try again.
+    </div>
+
+  </div>
+
+  <!-- ══ DASHBOARD ══ -->
+  <div id="tab-dashboard" class="page">
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-val" id="d-submitted">0</div><div class="stat-lbl">Submitted today</div></div>
+      <div class="stat-card"><div class="stat-val">8</div><div class="stat-lbl">Total supervisors</div></div>
+      <div class="stat-card"><div class="stat-val" id="d-workers">0</div><div class="stat-lbl">Workers logged</div></div>
+      <div class="stat-card"><div class="stat-val" id="d-eq">0</div><div class="stat-lbl">Equipment on site</div></div>
+    </div>
+    <div class="alert">
+      <div class="alert-dot"></div>
+      <div>Submissions appear here in real time. Open your Google Sheet for full data across all 5 sheets.</div>
+    </div>
+    <div class="section-label">Today's Submissions</div>
+    <div id="dash-submissions">
+      <div style="text-align:center;color:var(--text-sub);font-size:13px;padding:30px 0">
+        No submissions yet today.<br>Reports appear here after Submit is pressed.
+      </div>
+    </div>
+    <div class="section-label">Compliance — All Supervisors (Dec 2025)</div>
+    <div id="progress-list"></div>
+    <button class="submit-btn" style="background:#375623;margin-top:6px" onclick="window.open('https://docs.google.com/spreadsheets','_blank')">
+      Open Google Sheet ↗
+    </button>
+  </div>
+
+  <!-- ══ HISTORY ══ -->
+  <div id="tab-history" class="page">
+    <div class="field">
+      <label>Filter by supervisor</label>
+      <select onchange="filterHistory(this.value)">
+        <option value="all">All supervisors</option>
+        <option>Akram Faruk</option>
+        <option>Muthu</option>
+        <option>Sazon</option>
+        <option>Abu Sayed</option>
+        <option>Shamim</option>
+        <option>Nour Alam</option>
+        <option>Nayem</option>
+        <option>Kaimuzzaman</option>
+      </select>
+    </div>
+    <div id="history-list"></div>
+    <button class="submit-btn" style="background:#2E75B6;margin-top:6px" onclick="window.open('https://docs.google.com/spreadsheets','_blank')">
+      View Full History in Google Sheet ↗
+    </button>
+  </div>
+
+  <!-- ══ SETTINGS ══ -->
+  <div id="tab-settings" class="page">
+
+    <div class="section-label">Google Sheet Connection</div>
+    <div class="dash-card" style="padding:2px 12px">
+      <div class="settings-row">
+        <div>
+          <div class="sr-label">Connection Status</div>
+          <div class="sr-sub">Google Apps Script — Active</div>
+        </div>
+        <span class="pill pill-done">● Live</span>
+      </div>
+      <div class="settings-row">
+        <div>
+          <div class="sr-label">Sheets auto-filled on Submit</div>
+          <div class="sr-sub">Daily Work Log · Attendance Register · Equipment Log · Incidents & Events · Materials Log</div>
+        </div>
+      </div>
+      <div class="settings-row" style="border:none">
+        <div>
+          <div class="sr-label">Data per submission</div>
+          <div class="sr-sub">Each worker → separate Attendance row · Each equipment → Equipment Log row</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">Supervisors</div>
+    <div id="sup-list"></div>
+    <button class="add-btn">+ Add supervisor ↗</button>
+
+    <div class="section-label">Notifications</div>
+    <div class="dash-card" style="padding:2px 12px">
+      <div class="settings-row">
+        <div><div class="sr-label">WhatsApp reminder</div><div class="sr-sub">Send reminder at 6PM if not submitted</div></div>
+        <div class="toggle" onclick="this.classList.toggle('off')"></div>
+      </div>
+      <div class="settings-row">
+        <div><div class="sr-label">Missing report alert</div><div class="sr-sub">Alert manager if deadline missed</div></div>
+        <div class="toggle" onclick="this.classList.toggle('off')"></div>
+      </div>
+      <div class="settings-row">
+        <div><div class="sr-label">Auto-export to Excel</div><div class="sr-sub">Export every Sunday midnight</div></div>
+        <div class="toggle off" onclick="this.classList.toggle('off')"></div>
+      </div>
+      <div class="settings-row" style="border:none">
+        <div><div class="sr-label">Backfill mode</div><div class="sr-sub">Allow entry for past dates</div></div>
+        <div class="toggle" onclick="this.classList.toggle('off')"></div>
+      </div>
+    </div>
+
+    <div class="section-label">Backfill Past Reports</div>
+    <div class="alert">
+      <div class="alert-dot"></div>
+      <div>Backfill is ON. Submit reports for past dates — they go directly into your Google Sheet with the correct date.</div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>From date</label><input type="date"></div>
+      <div class="field"><label>To date</label><input type="date"></div>
+    </div>
+    <button class="submit-btn" style="background:#375623">Generate Backfill Sheet ↗</button>
+
+  </div>
+
+</div><!-- /.app -->
+
+<script>
+// ══════════════════════════════════════════════
+//  GOOGLE SHEET — Apps Script URL
+//  Fills: Daily Work Log, Attendance Register,
+//         Equipment Log, Incidents & Events, Materials Log
+// ══════════════════════════════════════════════
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzKhq4f5fKMgTNVNiD4RFBsX9GEq91gBdjDXLsy7ZWeCWaRjT8Mdpg4uNmnngtspWqG/exec';
+
+// ── Static data ──
+const SUPERVISORS = ['Akram Faruk','Muthu','Sazon','Abu Sayed','Shamim','Nour Alam','Nayem','Kaimuzzaman'];
+const COMPLIANCE  = [92, 88, 75, 96, 70, 83, 60, 78];
+
+// Sample history from actual Dec 2025 diary
+const HIST_SAMPLE = [
+  {date:'31/12/2025', sup:'Akram Faruk', loc:'Jalan S.Ampat', act:'Reaming 300mm x2, Tarik Pipe 4" 3-way, Buang Lumpur, Cuci Jalan', workers:11, crc:'CRC-21'},
+  {date:'30/12/2025', sup:'Akram Faruk', loc:'Jalan S.Ampat', act:'Repiloting CRC-21 after rod broke, Reaming 300mm RESUMED', workers:11, crc:'CRC-21'},
+  {date:'25/12/2025', sup:'Akram Faruk', loc:'Jalan S.Ampat', act:'PH Worked – CRC-20 COMPLETE, Trail CRC-21, ROD BROKE INCIDENT', workers:13, crc:'CRC-20, CRC-21'},
+  {date:'21/12/2025', sup:'Akram Faruk', loc:'Jalan S.Ampat', act:'Sunday Work – CRC-17 & CRC-18 COMPLETE', workers:12, crc:'CRC-17, CRC-18'},
+  {date:'20/12/2025', sup:'Akram Faruk', loc:'Jalan S.Ampat', act:'CRC-15 & CRC-16 COMPLETE in one day', workers:12, crc:'CRC-15, CRC-16'},
+  {date:'15/12/2025', sup:'Akram Faruk', loc:'Jalan S.Ampat', act:'CRC-14 COMPLETE, Pindah Mesin CRC-15, Trail Hole CRC-15', workers:10, crc:'CRC-14'},
+  {date:'06/12/2025', sup:'Akram Faruk', loc:'Jalan DIS Hashim', act:'CRC-2 COMPLETE – Reaming 500mm x3, Pipe Pass, Exit Point Closed', workers:11, crc:'CRC-2'},
+  {date:'03/12/2025', sup:'Muthu',        loc:'Jalan DIS Hashim', act:'Reaming 500mm x4, Tarik Pipe 6" 4-way, Test Pass CRC-1', workers:12, crc:'CRC-1'},
+  {date:'02/12/2025', sup:'Muthu',        loc:'Jalan DIS Hashim', act:'Reaming 500mm x3, Lori PQB tyre puncture – repaired, VP-04 support arrived', workers:11, crc:'CRC-1'},
+  {date:'01/12/2025', sup:'Akram Faruk', loc:'Jalan DIS Hashim', act:'Tool Box Talk & TMP, Reaming 400mm & 500mm, Ambil Bentonite 20 bag', workers:9, crc:'CRC-1'},
+];
+
+// Session state
+let sessionSubmissions = [];
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+
+  // Default workers based on Dec 2025 template
+  [
+    {name:'Muthu',      hours:11, shift:'Day'},
+    {name:'Faruk',      hours:11, shift:'Night'},
+    {name:'Sazon',      hours:11, shift:'Night'},
+    {name:'Abu Sayed',  hours:11, shift:'Night'},
+    {name:'Nour Alam',  hours:11, shift:'Night'},
+    {name:'Shamim',     hours:11, shift:'Night'},
+    {name:'Nayem',      hours:11, shift:'Night'},
+    {name:'Kaimuzzaman',hours:11, shift:'Night'},
+  ].forEach(w => addWorker(w.name, w.hours, w.shift));
+
+  // Default equipment
+  [
+    {name:'Lori PQB-9801', reg:'PQB-9801', status:'OK'},
+    {name:'Lori PPW-9801', reg:'PPW-9801', status:'OK'},
+    {name:'HDD Machine 2201', reg:'2201', status:'OK'},
+    {name:'Backhoe PKQ-9145', reg:'PKQ-9145', status:'OK'},
+  ].forEach(e => addEq(e.name, e.reg, e.status));
+
+  buildProgressList();
+  buildSupList();
+  renderHistory('all');
+});
+
+// ══════════════════════════════════════════════
+//  TABS
+// ══════════════════════════════════════════════
+function switchTab(t) {
+  ['form','dashboard','history','settings'].forEach((k,i) => {
+    document.querySelectorAll('.tab')[i].classList.toggle('active', k === t);
+  });
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + t).classList.add('active');
+  if (t === 'dashboard') updateDashboard();
+  if (t === 'history') renderHistory(document.querySelector('#tab-history select').value);
+}
+
+// ══════════════════════════════════════════════
+//  ADD WORKER ROW
+// ══════════════════════════════════════════════
+function addWorker(name='', hours=11, shift='Day') {
+  const d = document.createElement('div');
+  d.className = 'worker-row';
+  d.innerHTML =
+    `<input type="text" placeholder="Name" value="${name}">` +
+    `<input type="number" placeholder="Hrs" value="${hours}" min="0" max="36">` +
+    `<select>` +
+      `<option${shift==='Day'?' selected':''}>Day</option>` +
+      `<option${shift==='Night'?' selected':''}>Night</option>` +
+      `<option${shift==='Guard'?' selected':''}>Guard</option>` +
+    `</select>` +
+    `<button class="del-btn" onclick="this.parentElement.remove()">×</button>`;
+  document.getElementById('worker-list').appendChild(d);
+}
+
+// ══════════════════════════════════════════════
+//  ADD EQUIPMENT ROW
+// ══════════════════════════════════════════════
+function addEq(name='', reg='', status='OK') {
+  const d = document.createElement('div');
+  d.className = 'eq-row';
+  d.innerHTML =
+    `<input type="text" placeholder="Equipment" value="${name}">` +
+    `<input type="text" placeholder="Reg No" value="${reg}">` +
+    `<select>` +
+      `<option${status==='OK'?' selected':''}>OK</option>` +
+      `<option${status==='Issue'?' selected':''}>Issue</option>` +
+      `<option${status==='Standby'?' selected':''}>Standby</option>` +
+    `</select>` +
+    `<button class="del-btn" onclick="this.parentElement.remove()">×</button>`;
+  document.getElementById('eq-list').appendChild(d);
+}
+
+// ══════════════════════════════════════════════
+//  COLLECT DATA FROM FORM
+// ══════════════════════════════════════════════
+function collectWorkers() {
+  return Array.from(document.querySelectorAll('#worker-list .worker-row'))
+    .map(r => ({
+      name:  r.querySelector('input[type="text"]').value.trim(),
+      hours: parseInt(r.querySelector('input[type="number"]').value) || 11,
+      shift: r.querySelector('select').value
+    }))
+    .filter(w => w.name);
+}
+
+function collectEquipment() {
+  return Array.from(document.querySelectorAll('#eq-list .eq-row'))
+    .map(r => ({
+      name:   r.querySelectorAll('input')[0].value.trim(),
+      reg:    r.querySelectorAll('input')[1].value.trim(),
+      status: r.querySelector('select').value
+    }))
+    .filter(e => e.name);
+}
+
+// ══════════════════════════════════════════════
+//  SUBMIT → GOOGLE SHEET
+// ══════════════════════════════════════════════
+function submitReport() {
+  const sup = document.getElementById('f-sup').value;
+  const loc = document.getElementById('f-loc').value;
+  const act = document.getElementById('f-act').value.trim();
+
+  if (!sup) { alert('Please select a Supervisor.'); return; }
+  if (!loc) { alert('Please select a Location / Site.'); return; }
+  if (!act) { alert('Please fill in Activities Done Today.'); return; }
+
+  const workers   = collectWorkers();
+  const equipment = collectEquipment();
+
+  if (workers.length === 0 && !confirm('No workers added. Continue anyway?')) return;
+
+  const now = new Date();
+  const myTime = now.toLocaleString('en-MY', { timeZone: 'Asia/Kuala_Lumpur' });
+
+  // Build payload — matches doPost() in Apps Script exactly
+  const payload = {
+    date:          document.getElementById('f-date').value,
+    supervisor:    sup,
+    team:          document.getElementById('f-team').value,
+    location:      loc,
+    weather:       document.getElementById('f-weather').value,
+    startTime:     document.getElementById('f-start').value,
+    endTime:       document.getElementById('f-end').value,
+    workType:      document.getElementById('f-wtype').value,
+    activities:    act,
+    crc:           document.getElementById('f-crc').value,
+    dayType:       document.getElementById('f-daytype').value,
+    issues:        document.getElementById('f-issue').value.trim() || 'NIL',
+    workerCount:   workers.length,
+    workersList:   JSON.stringify(workers),     // → Attendance Register: one row per worker
+    equipmentList: JSON.stringify(equipment),   // → Equipment Log: one row per item
+    guard:         document.getElementById('f-guard').value,
+    guardShift:    document.getElementById('f-gshift').value,
+    material:      document.getElementById('f-mat').value,  // → Materials Log
+    remarks:       document.getElementById('f-rmk').value,
+    submittedAt:   myTime
+  };
+
+  // Loading state
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Submitting to Google Sheet...';
+  document.getElementById('success-box').style.display = 'none';
+  document.getElementById('error-box').style.display = 'none';
+
+  // Send to Google Apps Script
+  // mode: 'no-cors' is required — Google Script always returns opaque response
+  // If fetch() resolves (no network error) = submitted successfully
+  fetch(SHEET_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(() => {
+    btn.disabled = false;
+    btn.innerHTML = 'Submit Daily Report → Google Sheet';
+
+    // Show success with full detail
+    const workerNames = workers.map(w => w.name).join(', ') || '—';
+    const eqNames = equipment.map(e => e.name + (e.reg ? ' ' + e.reg : '')).join(', ') || '—';
+    document.getElementById('success-detail').innerHTML =
+      `<strong>${sup}</strong> · ${loc}<br>` +
+      `📅 ${formatDateDisplay(payload.date)} · ⏱ ${payload.startTime} – ${payload.endTime}<br>` +
+      `👷 ${workers.length} workers: ${workerNames}<br>` +
+      `🚜 Equipment: ${eqNames}<br>` +
+      `🕐 Submitted: ${myTime}`;
+    document.getElementById('success-box').style.display = 'block';
+    document.getElementById('success-box').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    // Save to session for dashboard
+    sessionSubmissions.push({
+      sup, loc,
+      workers: workers.length,
+      equipment: equipment.length,
+      crc: payload.crc,
+      time: now.toLocaleTimeString('en-MY', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kuala_Lumpur' })
+    });
+
+    // Save to localStorage for history tab
+    try {
+      const hist = JSON.parse(localStorage.getItem('sd_hist_v2') || '[]');
+      hist.unshift({ date: formatDateDisplay(payload.date), sup, loc, act: act.substring(0,80), workers: workers.length, crc: payload.crc });
+      localStorage.setItem('sd_hist_v2', JSON.stringify(hist.slice(0, 100)));
+    } catch(e) {}
+
+    // Auto-hide after 10 seconds
+    setTimeout(() => { document.getElementById('success-box').style.display = 'none'; }, 10000);
+  })
+  .catch(err => {
+    btn.disabled = false;
+    btn.innerHTML = 'Submit Daily Report → Google Sheet';
+    document.getElementById('error-box').style.display = 'block';
+    console.error('Fetch error:', err);
+  });
+}
+
+// ══════════════════════════════════════════════
+//  DASHBOARD
+// ══════════════════════════════════════════════
+function updateDashboard() {
+  document.getElementById('d-submitted').textContent = sessionSubmissions.length;
+  const totalW = sessionSubmissions.reduce((s, x) => s + x.workers, 0);
+  const totalE = sessionSubmissions.reduce((s, x) => s + x.equipment, 0);
+  document.getElementById('d-workers').textContent = totalW;
+  document.getElementById('d-eq').textContent = totalE;
+
+  const container = document.getElementById('dash-submissions');
+  if (sessionSubmissions.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text-sub);font-size:13px;padding:30px 0">No submissions yet today.<br>Reports appear here after Submit is pressed.</div>';
+    return;
+  }
+  container.innerHTML = '';
+  sessionSubmissions.slice().reverse().forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'dash-card';
+    card.innerHTML =
+      `<div class="dc-top"><span class="dc-name">${s.sup}</span><span class="dc-date">${s.time}</span></div>` +
+      `<div class="dc-pills">` +
+        `<span class="pill pill-done">Submitted ✓</span>` +
+        `<span class="pill pill-done">${s.workers} workers</span>` +
+        `<span class="pill pill-done">${s.equipment} equipment</span>` +
+        (s.loc ? `<span class="pill pill-blue">${s.loc.split('–')[0].trim().substring(0,20)}</span>` : '') +
+        (s.crc ? `<span class="pill pill-pend">${s.crc}</span>` : '') +
+      `</div>`;
+    container.appendChild(card);
+  });
+}
+
+function buildProgressList() {
+  const pl = document.getElementById('progress-list');
+  SUPERVISORS.forEach((s, i) => {
+    const pct = COMPLIANCE[i];
+    const row = document.createElement('div');
+    row.className = 'progress-row';
+    row.innerHTML =
+      `<div class="progress-name">${s}</div>` +
+      `<div class="progress-bar-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>` +
+      `<div class="progress-label">${pct}%</div>`;
+    pl.appendChild(row);
+  });
+}
+
+// ══════════════════════════════════════════════
+//  HISTORY
+// ══════════════════════════════════════════════
+function renderHistory(filter) {
+  const hl = document.getElementById('history-list');
+  hl.innerHTML = '';
+
+  let localHist = [];
+  try { localHist = JSON.parse(localStorage.getItem('sd_hist_v2') || '[]'); } catch(e) {}
+
+  let data = [...localHist, ...HIST_SAMPLE];
+  if (filter && filter !== 'all') data = data.filter(h => h.sup === filter);
+
+  if (data.length === 0) {
+    hl.innerHTML = '<div style="text-align:center;color:var(--text-sub);font-size:13px;padding:24px 0">No records found.</div>';
+    return;
+  }
+  data.forEach(h => {
+    const row = document.createElement('div');
+    row.className = 'history-row';
+    row.innerHTML =
+      `<div>` +
+        `<div class="hr-name">${h.sup}</div>` +
+        `<div class="hr-info">${h.date} · ${h.loc} · ${h.workers} workers</div>` +
+        (h.crc ? `<div class="hr-info" style="color:var(--navy);font-weight:500">${h.crc}</div>` : '') +
+        (h.act ? `<div class="hr-info" style="margin-top:2px">${h.act}</div>` : '') +
+      `</div>` +
+      `<span class="pill pill-done" style="white-space:nowrap;flex-shrink:0">Submitted</span>`;
+    hl.appendChild(row);
+  });
+}
+
+function filterHistory(v) { renderHistory(v); }
+
+// ══════════════════════════════════════════════
+//  SETTINGS — SUPERVISOR LIST
+// ══════════════════════════════════════════════
+function buildSupList() {
+  const sl = document.getElementById('sup-list');
+  SUPERVISORS.forEach((s, i) => {
+    const pct = COMPLIANCE[i];
+    const row = document.createElement('div');
+    row.className = 'settings-row';
+    const cls = pct >= 80 ? 'pill-done' : 'pill-pend';
+    row.innerHTML =
+      `<div>` +
+        `<div class="sr-label">${s}</div>` +
+        `<div class="sr-sub">Team 2201 · ${pct}% compliance · Dec 2025</div>` +
+      `</div>` +
+      `<span class="pill ${cls}" style="font-size:11px;padding:3px 10px">${pct}%</span>`;
+    sl.appendChild(row);
+  });
+}
+
+// ══════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════
+function formatDateDisplay(iso) {
+  if (!iso) return '—';
+  const [y, m, d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+</script>
+</body>
+</html>
